@@ -160,19 +160,17 @@ typedef PullDownMenuCanceled = void Function();
 /// the button is pressed.
 ///
 /// Used by [PullDownButton.itemBuilder].
-typedef PullDownMenuItemBuilder =
-    List<Widget> Function(
-      BuildContext context,
-    );
+typedef PullDownMenuItemBuilder = List<PullDownMenuEntry> Function(
+    BuildContext context,
+);
 
 /// Signature used by [PullDownButton] to build button widget.
 ///
 /// Used by [PullDownButton.buttonBuilder].
-typedef PullDownMenuButtonBuilder =
-    Widget Function(
-      BuildContext context,
-      Future<void> Function() showMenu,
-    );
+typedef PullDownMenuButtonBuilder = Widget Function(
+    BuildContext context,
+    Future<void> Function() showMenu,
+);
 
 /// Signature used by [PullDownButton] to create animation for
 /// [PullDownButton.buttonBuilder] when the pull-down menu is opened.
@@ -391,16 +389,22 @@ class _PullDownButtonState extends State<PullDownButton> {
       rootNavigator: widget.useRootNavigator,
     );
 
-    final RenderBox overlay = navigator.overlay!.context.currentRenderBox;
-    Rect button = context.getRect(ancestor: overlay);
+    final overlay = navigator.overlay!.context.currentRenderBox;
+    var button = context.getRect(
+      ancestor: overlay,
+      mediaQueryContext: navigator.overlay!.context,
+    );
 
     if (widget.buttonAnchor != null) {
       button = _anchorToButtonPart(context, button, widget.buttonAnchor!);
     }
 
-    final Alignment animationAlignment =
-        widget.animationAlignmentOverride ??
-        PullDownMenuRoute.animationAlignment(context, button);
+    final animationAlignment = widget.animationAlignmentOverride ??
+        PullDownMenuRoute.animationAlignment(
+          context,
+          button,
+          overlayContext: navigator.overlay!.context,
+        );
 
     final List<Widget> items = widget.itemBuilder(context);
 
@@ -603,25 +607,24 @@ Rect _anchorToButtonPart(
     PullDownMenuAnchor.end => buttonRect.left,
   };
 
-  return Rect.fromLTRB(
-    side,
-    buttonRect.top,
-    side,
-    buttonRect.bottom,
-  );
+  return Rect.fromLTRB(side, buttonRect.top, side, buttonRect.bottom);
 }
 
 /// Returns a barrier label for [PullDownMenuRoute].
 String _barrierLabel(BuildContext context) {
   // Use this instead of `MaterialLocalizations.of(context)` because
   // [MaterialLocalizations] might be null in some cases.
-  final MaterialLocalizations? materialLocalizations =
-      Localizations.of<MaterialLocalizations>(context, MaterialLocalizations);
+  final materialLocalizations = Localizations.of<MaterialLocalizations>(
+    context,
+    MaterialLocalizations,
+  );
 
   // Use this instead of `CupertinoLocalizations.of(context)` because
   // [CupertinoLocalizations] might be null in some cases.
-  final CupertinoLocalizations? cupertinoLocalizations =
-      Localizations.of<CupertinoLocalizations>(context, CupertinoLocalizations);
+  final cupertinoLocalizations = Localizations.of<CupertinoLocalizations>(
+    context,
+    CupertinoLocalizations,
+  );
 
   // If both localizations are null, fallback to
   // [DefaultMaterialLocalizations().modalBarrierDismissLabel].
