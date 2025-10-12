@@ -161,15 +161,15 @@ typedef PullDownMenuCanceled = void Function();
 ///
 /// Used by [PullDownButton.itemBuilder].
 typedef PullDownMenuItemBuilder = List<PullDownMenuEntry> Function(
-    BuildContext context,
+  BuildContext context,
 );
 
 /// Signature used by [PullDownButton] to build button widget.
 ///
 /// Used by [PullDownButton.buttonBuilder].
 typedef PullDownMenuButtonBuilder = Widget Function(
-    BuildContext context,
-    Future<void> Function() showMenu,
+  BuildContext context,
+  Future<void> Function() showMenu,
 );
 
 /// Signature used by [PullDownButton] to create animation for
@@ -430,10 +430,13 @@ class _PullDownButtonState extends State<PullDownButton> {
       routeSettings: widget.routeSettings,
     );
 
-    if (!mounted) return;
+    // Update state only if widget is still mounted
+    if (mounted) {
+      setState(() => state = PullDownButtonAnimationState.closed);
+    }
 
-    setState(() => state = PullDownButtonAnimationState.closed);
-
+    // Execute action callback even if widget is unmounted
+    // The user performed an action and it should be honored
     if (action != null) {
       action.call();
     } else {
