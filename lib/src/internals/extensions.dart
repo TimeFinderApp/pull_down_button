@@ -17,10 +17,16 @@ extension RectExtension on BuildContext {
   ///
   /// If [Rect]'s height is bigger than the screen size, additionally normalize
   /// [Rect] to help mitigate possible layout issues.
-  Rect getRect({RenderObject? ancestor}) {
-    final RenderBox renderBoxContainer = currentRenderBox;
-    final MediaQueryData queryData = MediaQuery.of(this);
-    final Size size = queryData.size;
+  ///
+  /// The [mediaQueryContext] parameter can be provided to use a different
+  /// context for MediaQuery lookups. This is useful when the button's
+  /// context has incomplete MediaQuery data (e.g., Flutter 3.35.x nav bar
+  /// bug where MediaQueryData only contains textScaler).
+  Rect getRect({RenderObject? ancestor, BuildContext? mediaQueryContext}) {
+    final renderBoxContainer = currentRenderBox;
+    final queryContext = mediaQueryContext ?? this;
+    final queryData = MediaQuery.of(queryContext);
+    final size = queryData.size;
 
     final rect = Rect.fromPoints(
       renderBoxContainer.localToGlobal(
@@ -43,12 +49,8 @@ extension RectExtension on BuildContext {
 
 /// Apply some additional adjustments on [Rect] from [RectExtension.getRect] if
 /// [rect] is bigger than [size].
-Rect _normalizeLargeRect(
-  Rect rect,
-  Size size,
-  EdgeInsets padding,
-) {
-  const double minimumAllowedSize = kMinInteractiveDimensionCupertino * 2;
+Rect _normalizeLargeRect(Rect rect, Size size, EdgeInsets padding) {
+  const minimumAllowedSize = kMinInteractiveDimensionCupertino * 2;
 
   final bool topIsNegative = rect.top.isNegative;
   final double height = size.height;

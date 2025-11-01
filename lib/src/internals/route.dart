@@ -153,13 +153,20 @@ class PullDownMenuRoute<VoidCallback> extends PopupRoute<VoidCallback> {
 
   /// Attempt to predict an animation alignment for [RoutePullDownMenu] using
   /// a button's position.
+  ///
+  /// The [overlayContext] parameter can be provided to use a different context
+  /// for MediaQuery lookups. This is useful when the button's context has
+  /// incomplete MediaQuery data (e.g., Flutter 3.35.x CupertinoNavigationBar
+  /// bug where MediaQueryData only contains textScaler).
   static Alignment animationAlignment(
     BuildContext context,
-    Rect buttonRect,
-  ) {
-    final Offset buttonCenter = buttonRect.center;
+    Rect buttonRect, {
+    BuildContext? overlayContext,
+  }) {
+    final buttonCenter = buttonRect.center;
 
-    final Size size = MediaQuery.of(context).size;
+    final queryContext = overlayContext ?? context;
+    final size = MediaQuery.of(queryContext).size;
 
     final double heightCenter = size.height / 2;
 
@@ -199,12 +206,9 @@ enum _MenuHorizontalPosition {
 
   /// Returns a [_MenuHorizontalPosition] for provided screen [size] and a
   /// [buttonRect].
-  static _MenuHorizontalPosition get(
-    Size size,
-    Rect buttonRect,
-  ) {
-    final double leftPosition = buttonRect.left;
-    final double rightPosition = buttonRect.right;
+  static _MenuHorizontalPosition get(Size size, Rect buttonRect) {
+    final leftPosition = buttonRect.left;
+    final rightPosition = buttonRect.right;
 
     final double width = size.width;
     final double widthCenter = width / 2;
